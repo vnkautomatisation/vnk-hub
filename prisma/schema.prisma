@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String        @id @default(cuid())
+  email     String        @unique
+  name      String
+  password  String
+  role      Role          @default(AGENT)
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  orders    Order[]       @relation("AssignedTo")
+  logs      ActivityLog[]
+}
+
+model Store {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  domain    String?
+  niche     String
+  active    Boolean   @default(true)
+  stripeKey String?
+  createdAt DateTime  @default(now())
+  products  Product[]
+  orders    Order[]
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  storeId       String
+  store         Store       @relation(fields: [storeId], references: [id])
+  name          String
+  nameFr        String
+  description   String
+  descriptionFr String
+  price         Float
+  cost          Float
+  images        String[]
+  supplier      Supplier
+  supplierSku   String
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  orderItems    OrderItem[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  storeId         String
+  store           Store       @relation(fields: [storeId], references: [id])
+  assignedToId    String?
+  assignedTo      User?       @relation("AssignedTo", fields: [assignedToId], references: [id])
+  status          OrderStatus @default(PENDING)
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  shippingAddress Json
+  items           OrderItem[]
+  totalAmount     Float
+  currency        String      @default("CAD")
+  stripePaymentId String?
+  supplierOrderId String?
+  trackingNumber  String?
+  trackingUrl     String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  details   Json?
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  AGENT
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  DISPATCHED_TO_SUPPLIER
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum Supplier {
+  CJ_DROPSHIPPING
+  ALIEXPRESS
+  ZENDROP
+  PRINTFUL
+  MANUAL
+}
