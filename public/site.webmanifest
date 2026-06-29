@@ -1,0 +1,12 @@
+{
+  "name": "VNK Hub",
+  "short_name": "VNK Hub",
+  "description": "Plateforme de gestion dropshipping",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#6366F1",
+  "background_color": "#FFFFFF",
+  "display": "standalone"
+}

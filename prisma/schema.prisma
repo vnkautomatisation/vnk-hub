@@ -20,16 +20,29 @@ model User {
 }
 
 model Store {
-  id        String    @id @default(cuid())
-  name      String
-  slug      String    @unique
-  domain    String?
-  niche     String
-  active    Boolean   @default(true)
-  stripeKey String?
-  createdAt DateTime  @default(now())
-  products  Product[]
-  orders    Order[]
+  id               String        @id @default(cuid())
+  name             String
+  slug             String        @unique
+  domain           String?
+  domainStatus     DomainStatus  @default(PENDING)
+  niche            String
+  language         StoreLanguage @default(FR)
+  active           Boolean       @default(true)
+  primaryColor     String        @default("#111827")
+  logoText         String?
+  logoUrl          String?
+  heroImageUrl     String?
+  heroTitle        String?
+  heroSubtitle     String?
+  slogan           String?
+  currency         String        @default("CAD")
+  useMainStripeKey Boolean       @default(true)
+  stripeKey        String?
+  paymentMethods   String[]      @default(["card"])
+  emailTemplates   Json?
+  createdAt        DateTime      @default(now())
+  products         Product[]
+  orders           Order[]
 }
 
 model Product {
@@ -46,6 +59,7 @@ model Product {
   supplier      Supplier
   supplierSku   String
   active        Boolean     @default(true)
+  featured      Boolean     @default(false)
   createdAt     DateTime    @default(now())
   orderItems    OrderItem[]
 }
@@ -72,6 +86,7 @@ model Order {
   notes           String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+  trackingEvents  TrackingEvent[]
 }
 
 model OrderItem {
@@ -91,6 +106,38 @@ model ActivityLog {
   action    String
   details   Json?
   createdAt DateTime @default(now())
+}
+
+model SupplierConnection {
+  id          String    @id @default(cuid())
+  supplier    Supplier  @unique
+  apiKey      String?
+  apiSecret   String?
+  connected   Boolean   @default(false)
+  lastSyncAt  DateTime?
+  lastError   String?
+  updatedAt   DateTime  @updatedAt
+}
+
+model TrackingEvent {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  status     String
+  location   String?
+  occurredAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+}
+
+model AppSettings {
+  id               String  @id @default(cuid())
+  companyName      String  @default("VNK Automatisation")
+  defaultLanguage  String  @default("fr")
+  resendApiKey     String?
+  fromEmail        String?
+  stripeSecretKey  String?
+  seventeenTrackKey String?
+  updatedAt        DateTime @updatedAt
 }
 
 enum Role {
@@ -117,4 +164,16 @@ enum Supplier {
   ZENDROP
   PRINTFUL
   MANUAL
+}
+
+enum DomainStatus {
+  PENDING
+  ACTIVE
+  ERROR
+}
+
+enum StoreLanguage {
+  FR
+  EN
+  BILINGUAL
 }

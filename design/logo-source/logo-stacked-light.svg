@@ -1,0 +1,14 @@
+<svg width="220" height="270" viewBox="0 0 220 270" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vnkIconGradient" x1="0" y1="0" x2="160" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+  <rect x="30" y="10" width="160" height="160" rx="36" fill="url(#vnkIconGradient)"/>
+  <rect x="65" y="65" width="35" height="35" rx="9" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="110" y="65" width="35" height="35" rx="9" fill="#FFFFFF" fill-opacity="0.5"/>
+  <rect x="65" y="110" width="35" height="35" rx="9" fill="#FFFFFF" fill-opacity="0.5"/>
+  <rect x="110" y="110" width="35" height="35" rx="9" fill="#FFFFFF" fill-opacity="0.95"/>
+  <text x="110" y="226" text-anchor="middle" font-family="Arial, 'Segoe UI', sans-serif" font-size="38" font-weight="500" fill="#F1F2F6">VNK<tspan fill="#6366F1">Hub</tspan></text>
+</svg>

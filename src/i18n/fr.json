@@ -1,9 +1,25 @@
 {
+  "appName": "VNK Hub",
   "dashboard": "Tableau de bord",
   "orders": "Commandes",
+  "ordersAll": "Toutes",
+  "ordersPending": "En attente",
+  "ordersShipped": "Expédiées",
+  "ordersCancelled": "Annulées",
+  "ordersRefunded": "Remboursées",
   "products": "Produits",
   "stores": "Boutiques",
+  "suppliers": "Fournisseurs",
+  "supplierCj": "CJ Dropshipping",
+  "supplierAliexpress": "AliExpress",
+  "supplierZendrop": "Zendrop",
+  "supplierPrintful": "Printful",
+  "tracking": "Tracking",
   "team": "Équipe",
   "analytics": "Analytique",
-  "settings": "Paramètres"
+  "settings": "Paramètres",
+  "connected": "Connecté",
+  "disconnected": "Déconnecté",
+  "logout": "Déconnexion",
+  "profile": "Profil"
 }
