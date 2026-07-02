@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import {
@@ -24,12 +24,12 @@ function initials(name: string) {
   return name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 }
 
+/* ─── Nav item styles ─── */
 const BASE: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   gap: 10,
-  padding: "8px 12px",
-  paddingLeft: 10,
+  padding: "8px 12px 8px 10px",
   borderRadius: 8,
   fontSize: 13,
   fontWeight: 450,
@@ -47,60 +47,147 @@ const BASE: React.CSSProperties = {
 
 const ACTIVE: React.CSSProperties = {
   ...BASE,
-  background: "rgba(99,102,241,0.12)",
+  background: "rgba(99,102,241,0.13)",
   color: "#A5B4FC",
   borderLeft: "2px solid #6366F1",
+  fontWeight: 500,
 };
 
-const SUB: React.CSSProperties = {
-  display: "block",
-  padding: "6px 12px 6px 38px",
+/* sub-item: flex so we can show the dot indicator */
+const SUB_BASE: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "6px 12px 6px 34px",
   fontSize: 12.5,
-  color: "var(--text-3)",
+  fontWeight: 400,
+  color: "var(--text-2)",
   textDecoration: "none",
   borderRadius: 6,
   transition: "background 100ms, color 100ms",
+  lineHeight: 1,
 };
 
 const SUB_ACTIVE: React.CSSProperties = {
-  ...SUB,
+  ...SUB_BASE,
   color: "#A5B4FC",
-  background: "rgba(99,102,241,0.08)",
+  background: "rgba(99,102,241,0.10)",
+  fontWeight: 500,
 };
 
 export function Sidebar({ userName, userRole, supplierStatus }: SidebarProps) {
-  const pathname = usePathname();
+  const pathname     = usePathname();
+  const searchParams = useSearchParams();
   const { lang, t, setLang } = useLanguage();
-  const [ordersOpen, setOrdersOpen] = useState(pathname.startsWith("/orders"));
+
+  const [ordersOpen,    setOrdersOpen]    = useState(pathname.startsWith("/orders"));
   const [suppliersOpen, setSuppliersOpen] = useState(pathname.startsWith("/suppliers"));
 
-  const isActive = (href: string) => pathname === href || pathname === href.split("?")[0];
+  /* exact path match (no query string) */
+  const isActive = (path: string) => pathname === path;
+
+  /* sub-item match: path + optional query params must match exactly */
+  function isSubActive(href: string): boolean {
+    const [path, query] = href.split("?");
+    if (pathname !== path) return false;
+    if (!query) {
+      // "/orders" (no filter) — active only when no status param set
+      return !searchParams.get("status");
+    }
+    const params = new URLSearchParams(query);
+    for (const [key, val] of params.entries()) {
+      if (searchParams.get(key) !== val) return false;
+    }
+    return true;
+  }
+
   const startsWith = (prefix: string) => pathname.startsWith(prefix);
 
   const orderFilters = [
-    { href: "/orders", label: t.nav_orders_all },
-    { href: "/orders?status=PENDING", label: t.nav_orders_pending },
-    { href: "/orders?status=SHIPPED", label: t.nav_orders_shipped },
-    { href: "/orders?status=CANCELLED", label: t.nav_orders_cancelled },
-    { href: "/orders?status=REFUNDED", label: t.nav_orders_refunded },
+    { href: "/orders",                    label: t.nav_orders_all       },
+    { href: "/orders?status=PENDING",     label: t.nav_orders_pending   },
+    { href: "/orders?status=SHIPPED",     label: t.nav_orders_shipped   },
+    { href: "/orders?status=CANCELLED",   label: t.nav_orders_cancelled },
+    { href: "/orders?status=REFUNDED",    label: t.nav_orders_refunded  },
   ];
 
+  function NavItem({
+    href, icon, label, active, onClick, open,
+  }: {
+    href?: string;
+    icon: React.ReactNode;
+    label: string;
+    active: boolean;
+    onClick?: () => void;
+    open?: boolean;
+  }) {
+    const style = active ? ACTIVE : BASE;
+    const hoverHandlers = {
+      onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+        if (!active) {
+          e.currentTarget.style.background = "var(--bg-hover)";
+          e.currentTarget.style.color = "var(--text-1)";
+        }
+      },
+      onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+        if (!active) {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "var(--text-2)";
+        }
+      },
+    };
+
+    if (href) {
+      return (
+        <Link href={href} style={style} {...hoverHandlers}>
+          <span style={{ color: active ? "#A5B4FC" : "var(--text-2)", display: "flex", flexShrink: 0 }}>{icon}</span>
+          {label}
+        </Link>
+      );
+    }
+    return (
+      <button style={{ ...style, justifyContent: "space-between" }} onClick={onClick} {...hoverHandlers}>
+        <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ color: active ? "#A5B4FC" : "var(--text-2)", display: "flex", flexShrink: 0 }}>{icon}</span>
+          {label}
+        </span>
+        <IconChevronDown size={13} style={{ color: "var(--text-3)", transition: "transform 150ms", transform: open ? "rotate(180deg)" : "none", flexShrink: 0 }} />
+      </button>
+    );
+  }
+
+  function SubItem({ href, label }: { href: string; label: string }) {
+    const active = isSubActive(href);
+    return (
+      <Link
+        href={href}
+        style={active ? SUB_ACTIVE : SUB_BASE}
+        onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-1)"; } }}
+        onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-2)"; } }}
+      >
+        {/* dot indicator */}
+        <span style={{
+          width: 5, height: 5, borderRadius: "50%", flexShrink: 0,
+          background: active ? "#6366F1" : "var(--border-strong)",
+          transition: "background 120ms",
+          boxShadow: active ? "0 0 0 2px rgba(99,102,241,0.25)" : "none",
+        }} />
+        {label}
+      </Link>
+    );
+  }
+
   return (
-    <aside
-      style={{
-        position: "fixed",
-        inset: "0 auto 0 0",
-        width: 224,
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--bg-surface)",
-        borderRight: "0.5px solid var(--border)",
-        zIndex: 100,
-      }}
-    >
-      {/* Logo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 16px 16px" }}>
+    <aside style={{
+      position: "fixed", inset: "0 auto 0 0",
+      width: 224, height: "100vh",
+      display: "flex", flexDirection: "column",
+      background: "var(--bg-surface)",
+      borderRight: "0.5px solid var(--border)",
+      zIndex: 100,
+    }}>
+      {/* ── Logo ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "18px 16px 14px" }}>
         <LogoIcon size={34} />
         <div>
           <div style={{ fontSize: 17, fontWeight: 600, color: "var(--text-1)", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
@@ -112,202 +199,101 @@ export function Sidebar({ userName, userRole, supplierStatus }: SidebarProps) {
         </div>
       </div>
 
-      <div style={{ height: "0.5px", background: "var(--border)", margin: "0 16px" }} />
+      <div style={{ height: "0.5px", background: "var(--border)", margin: "0 12px" }} />
 
-      {/* Nav */}
-      <nav style={{ flex: 1, overflowY: "auto", padding: "12px 8px" }}>
+      {/* ── Nav ── */}
+      <nav style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }}>
 
-        <Link href="/" style={isActive("/") ? ACTIVE : BASE}>
-          <IconLayoutDashboard size={16} style={{ flexShrink: 0 }} />
-          {t.nav_dashboard}
-        </Link>
+        <NavItem href="/" icon={<IconLayoutDashboard size={16} />} label={t.nav_dashboard} active={isActive("/")} />
 
         {/* Orders */}
-        <button
+        <NavItem
+          icon={<IconShoppingCart size={16} />}
+          label={t.nav_orders}
+          active={startsWith("/orders")}
           onClick={() => setOrdersOpen((v) => !v)}
-          style={startsWith("/orders") ? ACTIVE : BASE}
-        >
-          <IconShoppingCart size={16} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1 }}>{t.nav_orders}</span>
-          <IconChevronDown
-            size={13}
-            style={{
-              color: "var(--text-3)",
-              transition: "transform 150ms",
-              transform: ordersOpen ? "rotate(180deg)" : "none",
-              flexShrink: 0,
-            }}
-          />
-        </button>
+          open={ordersOpen}
+        />
         {ordersOpen && (
-          <div style={{ marginBottom: 2 }}>
-            {orderFilters.map((f) => (
-              <Link key={f.href} href={f.href} style={isActive(f.href) ? SUB_ACTIVE : SUB}>
-                {f.label}
-              </Link>
-            ))}
+          <div style={{ marginBottom: 2, marginTop: 1 }}>
+            {orderFilters.map((f) => <SubItem key={f.href} href={f.href} label={f.label} />)}
           </div>
         )}
 
-        <Link href="/products" style={startsWith("/products") ? ACTIVE : BASE}>
-          <IconPackage size={16} style={{ flexShrink: 0 }} />
-          {t.nav_products}
-        </Link>
-
-        <Link href="/stores" style={startsWith("/stores") ? ACTIVE : BASE}>
-          <IconWorld size={16} style={{ flexShrink: 0 }} />
-          {t.nav_stores}
-        </Link>
+        <NavItem href="/products"  icon={<IconPackage        size={16} />} label={t.nav_products}  active={startsWith("/products")}  />
+        <NavItem href="/stores"    icon={<IconWorld          size={16} />} label={t.nav_stores}    active={startsWith("/stores")}    />
 
         {/* Suppliers */}
-        <button
+        <NavItem
+          icon={<IconTruckDelivery size={16} />}
+          label={t.nav_suppliers}
+          active={startsWith("/suppliers")}
           onClick={() => setSuppliersOpen((v) => !v)}
-          style={startsWith("/suppliers") ? ACTIVE : BASE}
-        >
-          <IconTruckDelivery size={16} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1 }}>{t.nav_suppliers}</span>
-          <IconChevronDown
-            size={13}
-            style={{
-              color: "var(--text-3)",
-              transition: "transform 150ms",
-              transform: suppliersOpen ? "rotate(180deg)" : "none",
-              flexShrink: 0,
-            }}
-          />
-        </button>
+          open={suppliersOpen}
+        />
         {suppliersOpen && (
-          <div style={{ marginBottom: 2 }}>
+          <div style={{ marginBottom: 2, marginTop: 1 }}>
             {Object.entries(supplierLabels).map(([key, label]) => {
               const href = `/suppliers/${key.toLowerCase().replace("_dropshipping", "")}`;
               const connected = supplierStatus[key as ConnectableSupplier];
+              const active = pathname.startsWith(href);
               return (
-                <Link
-                  key={key}
-                  href={href}
-                  style={{
-                    ...(isActive(href) ? SUB_ACTIVE : SUB),
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
+                <Link key={key} href={href}
+                  style={active ? SUB_ACTIVE : SUB_BASE}
+                  onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-1)"; } }}
+                  onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-2)"; } }}
                 >
-                  <span>{label}</span>
-                  <span
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      background: connected ? "var(--success)" : "var(--danger)",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: active ? "#6366F1" : "var(--border-strong)", boxShadow: active ? "0 0 0 2px rgba(99,102,241,0.25)" : "none" }} />
+                  <span style={{ flex: 1 }}>{label}</span>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: connected ? "var(--success)" : "var(--danger)" }} />
                 </Link>
               );
             })}
           </div>
         )}
 
-        <Link href="/tracking" style={startsWith("/tracking") ? ACTIVE : BASE}>
-          <IconMapPin size={16} style={{ flexShrink: 0 }} />
-          {t.nav_tracking}
-        </Link>
-
-        <Link href="/team" style={startsWith("/team") ? ACTIVE : BASE}>
-          <IconUsers size={16} style={{ flexShrink: 0 }} />
-          {t.nav_team}
-        </Link>
-
-        <Link href="/analytics" style={startsWith("/analytics") ? ACTIVE : BASE}>
-          <IconChartBar size={16} style={{ flexShrink: 0 }} />
-          {t.nav_analytics}
-        </Link>
-
-        <Link href="/settings" style={startsWith("/settings") ? ACTIVE : BASE}>
-          <IconSettings size={16} style={{ flexShrink: 0 }} />
-          {t.nav_settings}
-        </Link>
+        <NavItem href="/tracking"  icon={<IconMapPin         size={16} />} label={t.nav_tracking}  active={startsWith("/tracking")}  />
+        <NavItem href="/team"      icon={<IconUsers          size={16} />} label={t.nav_team}      active={startsWith("/team")}      />
+        <NavItem href="/analytics" icon={<IconChartBar       size={16} />} label={t.nav_analytics} active={startsWith("/analytics")} />
+        <NavItem href="/settings"  icon={<IconSettings       size={16} />} label={t.nav_settings}  active={startsWith("/settings")}  />
       </nav>
 
-      {/* Bottom */}
-      <div style={{ borderTop: "0.5px solid var(--border)", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* ── Bottom ── */}
+      <div style={{ borderTop: "0.5px solid var(--border)", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 11 }}>
+
         {/* Lang toggle */}
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <div
-            style={{
-              display: "flex",
-              background: "var(--bg-card)",
-              border: "0.5px solid var(--border)",
-              borderRadius: 20,
-              padding: 2,
-            }}
-          >
+          <div style={{ display: "flex", background: "var(--bg-card)", border: "0.5px solid var(--border)", borderRadius: 20, padding: 2 }}>
             {(["fr", "en"] as const).map((l) => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                style={{
-                  padding: "3px 10px",
-                  borderRadius: 20,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  border: "none",
-                  background: lang === l ? "var(--accent)" : "transparent",
-                  color: lang === l ? "#fff" : "var(--text-3)",
-                  transition: "all 150ms",
-                }}
-              >
+              <button key={l} onClick={() => setLang(l)} style={{
+                padding: "3px 12px", borderRadius: 20, fontSize: 11, fontWeight: 500,
+                cursor: "pointer", border: "none",
+                background: lang === l ? "var(--accent)" : "transparent",
+                color: lang === l ? "#fff" : "var(--text-3)",
+                transition: "all 150ms",
+              }}>
                 {l.toUpperCase()}
               </button>
             ))}
           </div>
         </div>
 
-        {/* User info */}
+        {/* User */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: "var(--accent-gradient)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 12,
-              fontWeight: 700,
-              color: "#fff",
-              flexShrink: 0,
-              letterSpacing: "0.3px",
-            }}
-          >
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "linear-gradient(135deg,#3B82F6,#6366F1)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0,
+            boxShadow: "0 0 0 2px var(--bg-surface), 0 0 0 3.5px rgba(99,102,241,0.35)",
+          }}>
             {initials(userName || "?")}
           </div>
           <div style={{ minWidth: 0, overflow: "hidden" }}>
-            <p
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "var(--text-1)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                lineHeight: 1.3,
-              }}
-            >
+            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.3 }}>
               {userName || "Admin"}
             </p>
-            <p
-              style={{
-                fontSize: 11,
-                color: "var(--text-3)",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                lineHeight: 1.3,
-              }}
-            >
+            <p style={{ fontSize: 11, color: "var(--text-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.3 }}>
               {userRole || "Super Admin"}
             </p>
           </div>
@@ -316,20 +302,7 @@ export function Sidebar({ userName, userRole, supplierStatus }: SidebarProps) {
         {/* Logout */}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            width: "100%",
-            padding: "7px 10px",
-            borderRadius: 7,
-            border: "none",
-            background: "transparent",
-            color: "var(--danger)",
-            fontSize: 13,
-            cursor: "pointer",
-            transition: "background 120ms",
-          }}
+          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 10px", borderRadius: 7, border: "none", background: "transparent", color: "var(--danger)", fontSize: 13, cursor: "pointer", transition: "background 120ms" }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.08)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
         >
