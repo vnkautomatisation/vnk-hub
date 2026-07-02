@@ -2,8 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { InviteForm } from "@/components/team/invite-form";
 import { MemberCard } from "@/components/team/member-card";
 import { ActivityTimeline } from "@/components/team/activity-timeline";
+import { getT } from "@/lib/i18n";
 
 export default async function TeamPage() {
+  const t = getT();
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
@@ -34,10 +36,10 @@ export default async function TeamPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[22px] font-medium tracking-[-0.3px]" style={{ color: "var(--text-1)" }}>
-            Équipe
+            {t.team_title}
           </h1>
           <p className="text-[13px]" style={{ color: "var(--text-2)" }}>
-            {activeCount} membres actifs
+            {activeCount} {t.team_active_members}
           </p>
         </div>
         <InviteForm />

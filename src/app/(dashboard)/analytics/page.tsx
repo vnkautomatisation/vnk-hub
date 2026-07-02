@@ -5,6 +5,7 @@ import { AnalyticsPeriodSelect } from "@/components/analytics/analytics-period-s
 import { RevenueBarChart } from "@/components/analytics/revenue-bar-chart";
 import { StoreDonutChart } from "@/components/analytics/store-donut-chart";
 import { IconCash, IconShoppingCart, IconReceipt2, IconPercentage } from "@tabler/icons-react";
+import { getT, getLang } from "@/lib/i18n";
 
 function startOfPeriod(days: number) {
   const d = new Date();
@@ -21,6 +22,8 @@ function startOfDay(daysAgo: number) {
 }
 
 export default async function AnalyticsPage({ searchParams }: { searchParams: { period?: string } }) {
+  const t = getT();
+  const lang = getLang();
   const periodDays = parseInt(searchParams.period ?? "30", 10) || 30;
   const since = startOfPeriod(periodDays);
 
@@ -51,6 +54,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
   }));
 
   const chartDays = Math.min(periodDays, 30);
+  const locale = lang === "en" ? "en-CA" : "fr-CA";
   const revenueDays = await Promise.all(
     Array.from({ length: chartDays }, (_, i) => chartDays - 1 - i).map(async (daysAgo) => {
       const start = startOfDay(daysAgo);
@@ -60,7 +64,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
         where: { createdAt: { gte: start, lt: end }, status: { not: "CANCELLED" } },
       });
       return {
-        day: start.toLocaleDateString("fr-CA", chartDays > 14 ? { day: "2-digit", month: "2-digit" } : { weekday: "short" }),
+        day: start.toLocaleDateString(locale, chartDays > 14 ? { day: "2-digit", month: "2-digit" } : { weekday: "short" }),
         revenue: sum._sum.totalAmount ?? 0,
       };
     })
@@ -74,37 +78,37 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[22px] font-medium tracking-[-0.3px]" style={{ color: "var(--text-1)" }}>
-          Analytique
+          {t.analytics_title}
         </h1>
         <AnalyticsPeriodSelect value={periodDays} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={IconCash} iconColor="var(--success)" iconBg="var(--success-bg)" value={`${totalRevenue.toFixed(2)} $`} label="Revenus totaux" />
-        <StatCard icon={IconShoppingCart} iconColor="var(--info)" iconBg="var(--info-bg)" value={String(orderCount)} label="Commandes totales" />
-        <StatCard icon={IconReceipt2} iconColor="var(--purple)" iconBg="var(--purple-bg)" value={`${avgBasket.toFixed(2)} $`} label="Panier moyen" />
-        <StatCard icon={IconPercentage} iconColor="var(--warning)" iconBg="var(--warning-bg)" value={`${conversionRate.toFixed(1)}%`} label="Taux de conversion" />
+        <StatCard icon={IconCash} iconColor="var(--success)" iconBg="var(--success-bg)" value={`${totalRevenue.toFixed(2)} $`} label={t.analytics_total_revenue} />
+        <StatCard icon={IconShoppingCart} iconColor="var(--info)" iconBg="var(--info-bg)" value={String(orderCount)} label={t.analytics_total_orders} />
+        <StatCard icon={IconReceipt2} iconColor="var(--purple)" iconBg="var(--purple-bg)" value={`${avgBasket.toFixed(2)} $`} label={t.analytics_avg_basket} />
+        <StatCard icon={IconPercentage} iconColor="var(--warning)" iconBg="var(--warning-bg)" value={`${conversionRate.toFixed(1)}%`} label={t.analytics_conversion} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card>
-          <h2 className="card-title mb-3">Revenus par jour</h2>
+          <h2 className="card-title mb-3">{t.analytics_revenue_by_day}</h2>
           <RevenueBarChart data={revenueDays} />
         </Card>
         <Card>
-          <h2 className="card-title mb-3">Répartition par boutique</h2>
+          <h2 className="card-title mb-3">{t.analytics_by_store}</h2>
           <StoreDonutChart data={storePerf} />
         </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card>
-          <h2 className="card-title mb-3">Top 5 produits les plus vendus</h2>
+          <h2 className="card-title mb-3">{t.analytics_top_products}</h2>
           <table className="w-full">
             <thead>
               <tr>
-                <th>Produit</th>
-                <th>Vendus</th>
+                <th>{t.label_product}</th>
+                <th>{t.label_qty}</th>
               </tr>
             </thead>
             <tbody>
@@ -112,7 +116,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
                 const product = productMap.get(p.productId);
                 return (
                   <tr key={p.productId}>
-                    <td>{product?.nameFr ?? "Produit supprimé"}</td>
+                    <td>{product ? product.nameFr : t.analytics_deleted_product}</td>
                     <td className="td-muted">{p._sum.quantity}</td>
                   </tr>
                 );
@@ -120,7 +124,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
               {topProducts.length === 0 && (
                 <tr>
                   <td colSpan={2} className="text-center" style={{ color: "var(--text-3)" }}>
-                    Aucune vente
+                    {t.analytics_no_sales}
                   </td>
                 </tr>
               )}
@@ -129,14 +133,14 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
         </Card>
 
         <Card>
-          <h2 className="card-title mb-3">Performance par boutique</h2>
+          <h2 className="card-title mb-3">{t.analytics_top_stores}</h2>
           <table className="w-full">
             <thead>
               <tr>
-                <th>Boutique</th>
-                <th>Commandes</th>
-                <th>Revenus</th>
-                <th>Marge</th>
+                <th>{t.analytics_store_col}</th>
+                <th>{t.analytics_orders_col}</th>
+                <th>{t.analytics_revenue_col}</th>
+                <th>{t.analytics_margin}</th>
               </tr>
             </thead>
             <tbody>
@@ -151,7 +155,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
               {storePerf.length === 0 && (
                 <tr>
                   <td colSpan={4} className="text-center" style={{ color: "var(--text-3)" }}>
-                    Aucune boutique
+                    {t.analytics_no_stores}
                   </td>
                 </tr>
               )}

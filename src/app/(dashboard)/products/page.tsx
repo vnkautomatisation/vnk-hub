@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
+import { getT } from "@/lib/i18n";
 import { ProductsFilterBar } from "@/components/products/products-filter-bar";
 import { ProductsPageActions } from "@/components/products/products-page-actions";
 import { ProductsView } from "@/components/products/products-view";
@@ -15,6 +16,7 @@ export default async function ProductsPage({
   if (searchParams.supplier) where.supplier = searchParams.supplier as Supplier;
   if (searchParams.search) where.nameFr = { contains: searchParams.search, mode: "insensitive" };
 
+  const t = getT();
   const [products, stores, totalCount] = await Promise.all([
     prisma.product.findMany({
       where,
@@ -30,9 +32,9 @@ export default async function ProductsPage({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <h1 className="text-[22px] font-medium tracking-[-0.3px]" style={{ color: "var(--text-1)" }}>
-            Produits
+            {t.products_title}
           </h1>
-          <Badge>{totalCount} produits</Badge>
+          <Badge>{totalCount} {t.products_count}</Badge>
         </div>
         <ProductsPageActions stores={stores} />
       </div>
