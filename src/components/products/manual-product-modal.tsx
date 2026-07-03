@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/modal";
-import { Input, Select } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
+import { Select, type SelectOption } from "@/components/ui/Select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
@@ -24,6 +25,8 @@ export function ManualProductModal({
   const [cost, setCost] = useState("");
   const [sku, setSku] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const storeOptions: SelectOption[] = stores.map((s) => ({ value: s.id, label: s.name }));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,13 +62,7 @@ export function ManualProductModal({
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label className="input-label">Boutique</label>
-          <Select value={storeId} onChange={(e) => setStoreId(e.target.value)} className="w-full" required>
-            {stores.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
+          <Select options={storeOptions} value={storeId} onChange={setStoreId} minWidth="100%" />
         </div>
         <div>
           <label className="input-label">Nom du produit</label>

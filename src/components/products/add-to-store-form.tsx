@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { SupplierProduct } from "@/types/supplier";
+import { Select, type SelectOption } from "@/components/ui/Select";
 
 const supplierEnumMap: Record<string, string> = {
   cj: "CJ_DROPSHIPPING",
@@ -25,6 +26,8 @@ export function AddToStoreForm({
   const [price, setPrice] = useState(product.suggestedPrice);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const storeOptions: SelectOption[] = stores.map((s) => ({ value: s.id, label: s.name }));
 
   async function handleAdd() {
     setLoading(true);
@@ -71,18 +74,7 @@ export function AddToStoreForm({
 
   return (
     <div className="flex items-center gap-2 text-[12px]">
-      <select
-        value={storeId}
-        onChange={(e) => setStoreId(e.target.value)}
-        className="rounded-lg px-2 py-1"
-        style={{ background: "var(--bg-card)", border: "0.5px solid var(--border)", color: "var(--text-1)" }}
-      >
-        {stores.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name}
-          </option>
-        ))}
-      </select>
+      <Select options={storeOptions} value={storeId} onChange={setStoreId} minWidth={140} />
       <input
         type="number"
         step="0.01"

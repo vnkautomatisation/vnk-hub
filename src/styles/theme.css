@@ -45,13 +45,27 @@
   --bg-base: #f0f2f8;
   --bg-surface: #ffffff;
   --bg-card: #ffffff;
-  --bg-hover: #f4f5fb;
-  --bg-active: #6366f108;
+  --bg-hover: #f0f1f9;
+  --bg-active: rgba(99,102,241,0.08);
+
+  --accent-light: #4338ca;
+
   --text-1: #0f1117;
-  --text-2: #6b7280;
-  --text-3: #a0a3b1;
+  --text-2: #4b5563;
+  --text-3: #9ca3af;
+
   --border: #e5e7ef;
-  --border-strong: #d1d5e0;
+  --border-strong: #c7cad8;
+
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
+
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #2563eb;
+  --purple: #7c3aed;
+
   --success-bg: #dcfce7;
   --warning-bg: #fef9c3;
   --danger-bg: #fee2e2;

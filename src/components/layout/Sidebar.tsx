@@ -43,7 +43,7 @@ const BASE: React.CSSProperties = {
 const ACTIVE: React.CSSProperties = {
   ...BASE,
   background: "rgba(99,102,241,0.13)",
-  color: "#A5B4FC",
+  color: "var(--accent-light)",
   borderLeft: "2px solid #6366F1",
   fontWeight: 500,
 };
@@ -65,7 +65,7 @@ const SUB_BASE: React.CSSProperties = {
 
 const SUB_ACTIVE: React.CSSProperties = {
   ...SUB_BASE,
-  color: "#A5B4FC",
+  color: "var(--accent-light)",
   background: "rgba(99,102,241,0.10)",
   fontWeight: 500,
 };
@@ -104,7 +104,8 @@ export function Sidebar({ supplierStatus }: SidebarProps) {
     { href: "/orders?status=SHIPPED",     label: t.nav_orders_shipped   },
     { href: "/orders?status=CANCELLED",   label: t.nav_orders_cancelled },
     { href: "/orders?status=REFUNDED",    label: t.nav_orders_refunded  },
-  ];
+    { href: "/orders/live",               label: "Vue Live",             live: true },
+  ] as { href: string; label: string; live?: boolean }[];
 
   function NavItem({
     href, icon, label, active, onClick, open,
@@ -135,7 +136,7 @@ export function Sidebar({ supplierStatus }: SidebarProps) {
     if (href) {
       return (
         <Link href={href} style={style} {...hoverHandlers}>
-          <span style={{ color: active ? "#A5B4FC" : "var(--text-2)", display: "flex", flexShrink: 0 }}>{icon}</span>
+          <span style={{ color: active ? "var(--accent-light)" : "var(--text-2)", display: "flex", flexShrink: 0 }}>{icon}</span>
           {label}
         </Link>
       );
@@ -143,7 +144,7 @@ export function Sidebar({ supplierStatus }: SidebarProps) {
     return (
       <button style={{ ...style, justifyContent: "space-between" }} onClick={onClick} {...hoverHandlers}>
         <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ color: active ? "#A5B4FC" : "var(--text-2)", display: "flex", flexShrink: 0 }}>{icon}</span>
+          <span style={{ color: active ? "var(--accent-light)" : "var(--text-2)", display: "flex", flexShrink: 0 }}>{icon}</span>
           {label}
         </span>
         <IconChevronDown size={13} style={{ color: "var(--text-3)", transition: "transform 150ms", transform: open ? "rotate(180deg)" : "none", flexShrink: 0 }} />
@@ -151,7 +152,7 @@ export function Sidebar({ supplierStatus }: SidebarProps) {
     );
   }
 
-  function SubItem({ href, label }: { href: string; label: string }) {
+  function SubItem({ href, label, live }: { href: string; label: string; live?: boolean }) {
     const active = isSubActive(href);
     return (
       <Link
@@ -161,13 +162,26 @@ export function Sidebar({ supplierStatus }: SidebarProps) {
         onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-2)"; } }}
       >
         {/* dot indicator */}
-        <span style={{
-          width: 5, height: 5, borderRadius: "50%", flexShrink: 0,
-          background: active ? "#6366F1" : "var(--border-strong)",
-          transition: "background 120ms",
-          boxShadow: active ? "0 0 0 2px rgba(99,102,241,0.25)" : "none",
-        }} />
+        {live ? (
+          <span style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: "#4ade80", boxShadow: "0 0 5px #4ade80" }} />
+        ) : (
+          <span style={{
+            width: 5, height: 5, borderRadius: "50%", flexShrink: 0,
+            background: active ? "#6366F1" : "var(--border-strong)",
+            transition: "background 120ms",
+            boxShadow: active ? "0 0 0 2px rgba(99,102,241,0.25)" : "none",
+          }} />
+        )}
         {label}
+        {live && (
+          <span style={{
+            marginLeft: "auto", fontSize: 9, fontWeight: 700, letterSpacing: "0.05em",
+            padding: "1px 6px", borderRadius: 6,
+            background: "rgba(74,222,128,0.15)", color: "#4ade80", border: "0.5px solid #4ade80",
+          }}>
+            LIVE
+          </span>
+        )}
       </Link>
     );
   }
@@ -197,7 +211,7 @@ export function Sidebar({ supplierStatus }: SidebarProps) {
       <div style={{ height: "0.5px", background: "var(--border)", margin: "0 12px" }} />
 
       {/* ── Nav ── */}
-      <nav style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }}>
+      <nav style={{ flex: 1, overflowY: "auto", padding: "10px 8px 20px" }}>
 
         <NavItem href="/" icon={<IconLayoutDashboard size={16} />} label={t.nav_dashboard} active={isActive("/")} />
 
@@ -211,7 +225,7 @@ export function Sidebar({ supplierStatus }: SidebarProps) {
         />
         {ordersOpen && (
           <div style={{ marginBottom: 2, marginTop: 1 }}>
-            {orderFilters.map((f) => <SubItem key={f.href} href={f.href} label={f.label} />)}
+            {orderFilters.map((f) => <SubItem key={f.href} href={f.href} label={f.label} live={f.live} />)}
           </div>
         )}
 

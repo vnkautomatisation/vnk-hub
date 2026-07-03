@@ -15,8 +15,9 @@ model User {
   role      Role          @default(AGENT)
   active    Boolean       @default(true)
   createdAt DateTime      @default(now())
-  orders    Order[]       @relation("AssignedTo")
-  logs      ActivityLog[]
+  orders      Order[]       @relation("AssignedTo")
+  logs        ActivityLog[]
+  orderNotes  OrderNote[]
 }
 
 model Store {
@@ -65,28 +66,36 @@ model Product {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique
-  storeId         String
-  store           Store       @relation(fields: [storeId], references: [id])
-  assignedToId    String?
-  assignedTo      User?       @relation("AssignedTo", fields: [assignedToId], references: [id])
-  status          OrderStatus @default(PENDING)
-  customerName    String
-  customerEmail   String
-  customerPhone   String?
-  shippingAddress Json
-  items           OrderItem[]
-  totalAmount     Float
-  currency        String      @default("CAD")
-  stripePaymentId String?
-  supplierOrderId String?
-  trackingNumber  String?
-  trackingUrl     String?
-  notes           String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  trackingEvents  TrackingEvent[]
+  id                 String      @id @default(cuid())
+  orderNumber        String      @unique
+  storeId            String
+  store              Store       @relation(fields: [storeId], references: [id])
+  assignedToId       String?
+  assignedTo         User?       @relation("AssignedTo", fields: [assignedToId], references: [id])
+  status             OrderStatus @default(PENDING)
+  customerName       String
+  customerEmail      String
+  customerPhone      String?
+  shippingAddress    Json
+  items              OrderItem[]
+  totalAmount        Float
+  currency           String      @default("CAD")
+  stripePaymentId    String?
+  supplierOrderId    String?
+  trackingNumber     String?
+  trackingUrl        String?
+  trackingCarrier    String?
+  notes              String?
+  cancellationReason String?
+  expectedDeliveryAt DateTime?
+  dispatchedAt       DateTime?
+  cancelledAt        DateTime?
+  refundedAt         DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  trackingEvents     TrackingEvent[]
+  orderNotes         OrderNote[]
+  statusHistory      OrderStatusHistory[]
 }
 
 model OrderItem {
@@ -127,17 +136,21 @@ model TrackingEvent {
   location   String?
   occurredAt DateTime @default(now())
   createdAt  DateTime @default(now())
+  tag        Int?
+  source     String?  @default("manual")
 }
 
 model AppSettings {
-  id               String  @id @default(cuid())
-  companyName      String  @default("VNK Automatisation")
-  defaultLanguage  String  @default("fr")
-  resendApiKey     String?
-  fromEmail        String?
-  stripeSecretKey  String?
-  seventeenTrackKey String?
-  updatedAt        DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  companyName           String   @default("VNK Automatisation")
+  defaultLanguage       String   @default("fr")
+  resendApiKey          String?
+  fromEmail             String?
+  stripeSecretKey       String?
+  seventeenTrackKey     String?
+  trackingWebhookSecret String?
+  slaHours              Int      @default(48)
+  updatedAt             DateTime @updatedAt
 }
 
 enum Role {
@@ -176,4 +189,25 @@ enum StoreLanguage {
   FR
   EN
   BILINGUAL
+}
+
+model OrderNote {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model OrderStatusHistory {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  fromStatus String?
+  toStatus   String
+  userId     String?
+  note       String?
+  createdAt  DateTime @default(now())
 }

@@ -261,7 +261,7 @@ export function Topbar({
   const panelStyle: React.CSSProperties = {
     position: "absolute", top: 48, right: 0,
     background: "var(--bg-surface)", border: "0.5px solid var(--border)",
-    borderRadius: 12, boxShadow: "0 8px 40px rgba(0,0,0,0.3)", zIndex: 200,
+    borderRadius: 12, boxShadow: "var(--shadow-lg)", zIndex: 200,
   };
 
   return (
@@ -453,7 +453,7 @@ export function Topbar({
                       <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-1)", lineHeight: 1.3 }}>{userName}</div>
                       {userEmail && <div style={{ fontSize: 11, color: "var(--text-3)", lineHeight: 1.3, marginTop: 1 }}>{userEmail}</div>}
                       {userRole && (
-                        <span style={{ display: "inline-block", marginTop: 5, fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "rgba(99,102,241,0.14)", color: "#A5B4FC", fontWeight: 500, letterSpacing: "0.02em" }}>
+                        <span style={{ display: "inline-block", marginTop: 5, fontSize: 10, padding: "2px 8px", borderRadius: 20, background: "rgba(99,102,241,0.14)", color: "var(--accent-light)", fontWeight: 500, letterSpacing: "0.02em" }}>
                           {userRole}
                         </span>
                       )}

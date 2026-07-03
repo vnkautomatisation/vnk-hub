@@ -7,8 +7,16 @@ import type { SupplierProduct } from "@/types/supplier";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, type SelectOption } from "@/components/ui/Select";
 import { AddToStoreForm } from "@/components/products/add-to-store-form";
 import { EmptyState } from "@/components/ui/empty-state";
+
+const CATEGORY_OPTIONS: SelectOption[] = [
+  { value: "", label: "Toutes catégories" },
+  { value: "electronics", label: "Électronique" },
+  { value: "home", label: "Maison" },
+  { value: "fashion", label: "Mode" },
+];
 
 export function SupplierProductSearch({ slug, stores }: { slug: string; stores: { id: string; name: string }[] }) {
   const router = useRouter();
@@ -42,12 +50,7 @@ export function SupplierProductSearch({ slug, stores }: { slug: string; stores: 
             className="input"
           />
         </div>
-        <select value={category} onChange={(e) => setCategory(e.target.value)} className="input" style={{ width: 160 }}>
-          <option value="">Toutes catégories</option>
-          <option value="electronics">Électronique</option>
-          <option value="home">Maison</option>
-          <option value="fashion">Mode</option>
-        </select>
+        <Select options={CATEGORY_OPTIONS} value={category} onChange={setCategory} minWidth={150} />
         <Button type="submit" disabled={loading}>
           {loading ? "Recherche..." : "Rechercher"}
         </Button>
@@ -68,9 +71,7 @@ export function SupplierProductSearch({ slug, stores }: { slug: string; stores: 
                   )}
                 </div>
                 <div className="space-y-1.5 p-3">
-                  <p className="truncate text-[13px] font-medium" style={{ color: "var(--text-1)" }}>
-                    {p.nameFr}
-                  </p>
+                  <p className="truncate text-[13px] font-medium" style={{ color: "var(--text-1)" }}>{p.nameFr}</p>
                   <div className="flex items-center justify-between text-[12px]">
                     <span style={{ color: "var(--success)" }}>{p.cost.toFixed(2)} $</span>
                     <span style={{ color: "var(--text-1)" }}>{p.suggestedPrice.toFixed(2)} $</span>

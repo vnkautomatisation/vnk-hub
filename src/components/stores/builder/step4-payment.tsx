@@ -1,11 +1,17 @@
 "use client";
 
-import { Input, Select } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
+import { Select, type SelectOption } from "@/components/ui/Select";
 
 const availableMethods = [
   { value: "card", label: "Carte de crédit" },
   { value: "apple_pay", label: "Apple Pay" },
   { value: "google_pay", label: "Google Pay" },
+];
+
+const CURRENCY_OPTIONS: SelectOption[] = [
+  { value: "CAD", label: "CAD" },
+  { value: "USD", label: "USD" },
 ];
 
 export function Step4Payment({
@@ -47,28 +53,19 @@ export function Step4Payment({
 
         {!useMainStripeKey && (
           <div className="space-y-1">
-            <label className="text-[13px]" style={labelStyle}>
-              Clé Stripe dédiée à cette boutique
-            </label>
+            <label className="text-[13px]" style={labelStyle}>Clé Stripe dédiée à cette boutique</label>
             <Input value={stripeKey} onChange={(e) => setStripeKey(e.target.value)} placeholder="sk_test_..." className="w-full" />
           </div>
         )}
       </div>
 
       <div className="space-y-1">
-        <label className="text-[13px]" style={labelStyle}>
-          Devise
-        </label>
-        <Select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full">
-          <option value="CAD">CAD</option>
-          <option value="USD">USD</option>
-        </Select>
+        <label className="text-[13px]" style={labelStyle}>Devise</label>
+        <Select options={CURRENCY_OPTIONS} value={currency} onChange={setCurrency} minWidth="100%" />
       </div>
 
       <div className="space-y-1">
-        <label className="text-[13px]" style={labelStyle}>
-          Modes de paiement
-        </label>
+        <label className="text-[13px]" style={labelStyle}>Modes de paiement</label>
         {availableMethods.map((m) => (
           <label key={m.value} className="flex items-center gap-2 text-[13px]" style={{ color: "var(--text-1)" }}>
             <input type="checkbox" checked={paymentMethods.includes(m.value)} onChange={() => toggleMethod(m.value)} />

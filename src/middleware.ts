@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 
-const dashboardRoutes = ["/", "/orders", "/products", "/stores", "/team", "/analytics", "/settings"];
+const dashboardRoutes = ["/", "/orders", "/products", "/stores", "/suppliers", "/tracking", "/team", "/analytics", "/settings"];
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
