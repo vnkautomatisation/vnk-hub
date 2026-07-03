@@ -65,6 +65,18 @@ model Product {
   orderItems    OrderItem[]
 }
 
+model Customer {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  phone     String?
+  address   Json?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  orders    Order[]
+}
+
 model Order {
   id                 String      @id @default(cuid())
   orderNumber        String      @unique
@@ -72,6 +84,8 @@ model Order {
   store              Store       @relation(fields: [storeId], references: [id])
   assignedToId       String?
   assignedTo         User?       @relation("AssignedTo", fields: [assignedToId], references: [id])
+  customerId         String?
+  customer           Customer?   @relation(fields: [customerId], references: [id])
   status             OrderStatus @default(PENDING)
   customerName       String
   customerEmail      String
@@ -86,6 +100,7 @@ model Order {
   trackingUrl        String?
   trackingCarrier    String?
   notes              String?
+  manualItems        Json?
   cancellationReason String?
   expectedDeliveryAt DateTime?
   dispatchedAt       DateTime?

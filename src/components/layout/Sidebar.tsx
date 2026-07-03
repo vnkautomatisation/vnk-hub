@@ -7,7 +7,7 @@ import {
   IconLayoutDashboard, IconShoppingCart, IconPackage,
   IconWorld, IconTruckDelivery, IconMapPin,
   IconUsers, IconChartBar, IconSettings,
-  IconChevronDown,
+  IconChevronDown, IconAddressBook,
 } from "@tabler/icons-react";
 import { supplierLabels, type ConnectableSupplier } from "@/lib/suppliers";
 import { LogoIcon } from "@/components/brand/logo";
@@ -262,6 +262,7 @@ export function Sidebar({ supplierStatus }: SidebarProps) {
         )}
 
         <NavItem href="/tracking"  icon={<IconMapPin         size={16} />} label={t.nav_tracking}  active={startsWith("/tracking")}  />
+        <NavItem href="/clients"   icon={<IconAddressBook    size={16} />} label={t.nav_clients}   active={startsWith("/clients")}   />
         <NavItem href="/team"      icon={<IconUsers          size={16} />} label={t.nav_team}      active={startsWith("/team")}      />
         <NavItem href="/analytics" icon={<IconChartBar       size={16} />} label={t.nav_analytics} active={startsWith("/analytics")} />
         <NavItem href="/settings"  icon={<IconSettings       size={16} />} label={t.nav_settings}  active={startsWith("/settings")}  />

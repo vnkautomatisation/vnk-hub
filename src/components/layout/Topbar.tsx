@@ -6,7 +6,7 @@ import {
   IconUser, IconSettings, IconLogout, IconSearch,
   IconShoppingCart, IconWorld, IconPackage,
   IconLayoutDashboard, IconTruckDelivery, IconMapPin,
-  IconUsers, IconChartBar, IconArrowRight,
+  IconUsers, IconChartBar, IconArrowRight, IconAddressBook,
 } from "@tabler/icons-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
@@ -22,6 +22,7 @@ const PAGE_META: { prefix: string; meta: PageMeta }[] = [
   { prefix: "/stores",    meta: { icon: <IconWorld         size={18} />, color: "var(--purple)",  bg: "var(--purple-bg)"  } },
   { prefix: "/suppliers", meta: { icon: <IconTruckDelivery size={18} />, color: "var(--warning)", bg: "var(--warning-bg)" } },
   { prefix: "/tracking",  meta: { icon: <IconMapPin        size={18} />, color: "var(--info)",    bg: "var(--info-bg)"    } },
+  { prefix: "/clients",   meta: { icon: <IconAddressBook   size={18} />, color: "var(--info)",    bg: "var(--info-bg)"    } },
   { prefix: "/team",      meta: { icon: <IconUsers         size={18} />, color: "var(--success)", bg: "var(--success-bg)" } },
   { prefix: "/analytics", meta: { icon: <IconChartBar      size={18} />, color: "var(--purple)",  bg: "var(--purple-bg)"  } },
   { prefix: "/settings",  meta: { icon: <IconSettings      size={18} />, color: "var(--text-2)",  bg: "var(--bg-hover)"   } },
@@ -47,6 +48,7 @@ const QUICK_NAV: SearchItem[] = [
   { id: "n4", icon: <IconWorld           size={15} />, title: "Boutiques",       href: "/stores" },
   { id: "n5", icon: <IconTruckDelivery   size={15} />, title: "Fournisseurs",    href: "/suppliers" },
   { id: "n6", icon: <IconMapPin          size={15} />, title: "Tracking",        href: "/tracking" },
+  { id: "nc", icon: <IconAddressBook     size={15} />, title: "Clients",         href: "/clients" },
   { id: "n7", icon: <IconUsers           size={15} />, title: "Équipe",          href: "/team" },
   { id: "n8", icon: <IconChartBar        size={15} />, title: "Analytique",      href: "/analytics" },
   { id: "n9", icon: <IconSettings        size={15} />, title: "Paramètres",      href: "/settings" },

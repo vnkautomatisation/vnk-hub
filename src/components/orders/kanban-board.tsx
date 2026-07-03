@@ -33,7 +33,7 @@ const COL_KEYS = new Set(COLUMNS.map((c) => c.key));
 
 function isBlocked(o: LiveOrder, slaHours: number) {
   if (["DELIVERED", "CANCELLED", "REFUNDED"].includes(o.status)) return false;
-  return Date.now() - new Date(o.createdAt).getTime() > slaHours * 3600 * 1000;
+  return Date.now() - new Date(o.updatedAt).getTime() > slaHours * 3600 * 1000;
 }
 
 function beep() {
