@@ -6,7 +6,7 @@ import { IconArrowLeft } from "@tabler/icons-react";
 export default async function OrdersLivePage() {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-  const [orders, employees] = await Promise.all([
+  const [orders, employees, settings] = await Promise.all([
     prisma.order.findMany({
       where: {
         OR: [
@@ -25,6 +25,8 @@ export default async function OrdersLivePage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.user.findMany({ where: { active: true }, select: { id: true, name: true } }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma.appSettings.findFirst as any)({ select: { slaHours: true } }) as Promise<{ slaHours?: number } | null>,
   ]);
 
   const serialized = orders.map((o) => ({
@@ -44,7 +46,7 @@ export default async function OrdersLivePage() {
           Commandes en temps réel
         </h1>
       </div>
-      <KanbanBoard initialOrders={serialized} employees={employees} />
+      <KanbanBoard initialOrders={serialized} employees={employees} slaHours={settings?.slaHours ?? 48} />
     </div>
   );
 }

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { OrdersFilterBar } from "@/components/orders/orders-filter-bar";
 import { getT, getLang } from "@/lib/i18n";
-import { IconDownload, IconPlus, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { OrdersHeaderActions } from "@/components/orders/orders-header-actions";
 
 const PAGE_SIZE = 25;
 
@@ -118,8 +119,9 @@ export default async function OrdersPage({
           </p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <a
-            href={`/api/orders/export?${new URLSearchParams({
+          <OrdersHeaderActions
+            stores={stores}
+            exportHref={`/api/orders/export?${new URLSearchParams({
               ...(searchParams.status   ? { status:   searchParams.status   } : {}),
               ...(searchParams.storeId  ? { storeId:  searchParams.storeId  } : {}),
               ...(searchParams.supplier ? { supplier: searchParams.supplier } : {}),
@@ -127,14 +129,7 @@ export default async function OrdersPage({
               ...(searchParams.to       ? { to:       searchParams.to       } : {}),
               ...(searchParams.q        ? { q:        searchParams.q        } : {}),
             }).toString()}`}
-            className="btn btn-secondary btn-sm"
-            download
-          >
-            <IconDownload size={14} /> Exporter CSV
-          </a>
-          <button className="btn btn-secondary btn-sm" disabled style={{ cursor: "not-allowed", opacity: 0.5 }}>
-            <IconPlus size={14} /> Nouvelle commande
-          </button>
+          />
           <Link href="/orders/live" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 500, border: "0.5px solid #4ADE80", color: "#4ADE80", textDecoration: "none", background: "rgba(74,222,128,0.06)" }}>
             <span style={{ width: 7, height: 7, background: "#4ADE80", borderRadius: "50%", boxShadow: "0 0 6px #4ADE80" }} />
             Vue Live

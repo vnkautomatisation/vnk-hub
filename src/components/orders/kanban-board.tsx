@@ -31,9 +31,9 @@ const COLUMNS: { key: string; label: string; color: string }[] = [
 
 const COL_KEYS = new Set(COLUMNS.map((c) => c.key));
 
-function isBlocked(o: LiveOrder) {
+function isBlocked(o: LiveOrder, slaHours: number) {
   if (["DELIVERED", "CANCELLED", "REFUNDED"].includes(o.status)) return false;
-  return Date.now() - new Date(o.createdAt).getTime() > 48 * 3600 * 1000;
+  return Date.now() - new Date(o.createdAt).getTime() > slaHours * 3600 * 1000;
 }
 
 function beep() {
@@ -56,8 +56,8 @@ function fmtAge(d: string) {
   return `${Math.floor(diff / 1440)}j`;
 }
 
-function OrderCard({ order, index, onClick }: { order: LiveOrder; index: number; onClick: (o: LiveOrder) => void }) {
-  const blocked = isBlocked(order);
+function OrderCard({ order, index, slaHours, onClick }: { order: LiveOrder; index: number; slaHours: number; onClick: (o: LiveOrder) => void }) {
+  const blocked = isBlocked(order, slaHours);
 
   return (
     <Draggable draggableId={order.id} index={index}>
@@ -84,7 +84,7 @@ function OrderCard({ order, index, onClick }: { order: LiveOrder; index: number;
           {blocked && (
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6, padding: "3px 8px", background: "var(--danger-bg)", borderRadius: 6 }}>
               <IconAlertTriangle size={11} style={{ color: "var(--danger)" }} />
-              <span style={{ fontSize: 10, color: "var(--danger)", fontWeight: 600 }}>Bloquée +48h</span>
+              <span style={{ fontSize: 10, color: "var(--danger)", fontWeight: 600 }}>Bloquée +{slaHours}h</span>
             </div>
           )}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 4 }}>
@@ -114,14 +114,14 @@ function OrderCard({ order, index, onClick }: { order: LiveOrder; index: number;
   );
 }
 
-function TimelineView({ orders, onCardClick }: { orders: LiveOrder[]; onCardClick: (o: LiveOrder) => void }) {
+function TimelineView({ orders, slaHours, onCardClick }: { orders: LiveOrder[]; slaHours: number; onCardClick: (o: LiveOrder) => void }) {
   const sorted = [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const colMap = Object.fromEntries(COLUMNS.map((c) => [c.key, c]));
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0, borderLeft: "2px solid var(--border)", marginLeft: 20 }}>
       {sorted.map((order, i) => {
-        const blocked = isBlocked(order);
+        const blocked = isBlocked(order, slaHours);
         const col = colMap[order.status];
         const color = col?.color ?? "var(--border-strong)";
         return (
@@ -161,9 +161,10 @@ function TimelineView({ orders, onCardClick }: { orders: LiveOrder[]; onCardClic
   );
 }
 
-export function KanbanBoard({ initialOrders, employees = [] }: {
+export function KanbanBoard({ initialOrders, employees = [], slaHours = 48 }: {
   initialOrders: LiveOrder[];
   employees?: { id: string; name: string }[];
+  slaHours?: number;
 }) {
   const { showToast } = useToast();
   const [orders, setOrders] = useState<LiveOrder[]>(initialOrders);
@@ -241,7 +242,7 @@ export function KanbanBoard({ initialOrders, employees = [] }: {
   }
 
   const activeOrders = orders.filter((o) => !["CANCELLED", "REFUNDED"].includes(o.status));
-  const blockedCount = activeOrders.filter(isBlocked).length;
+  const blockedCount = activeOrders.filter((o) => isBlocked(o, slaHours)).length;
   // Orders not shown in any kanban column (terminal)
   const hiddenCount = orders.length - activeOrders.length;
 
@@ -263,7 +264,7 @@ export function KanbanBoard({ initialOrders, employees = [] }: {
           </span>
           {blockedCount > 0 && (
             <span style={{ fontSize: 12, fontWeight: 600, color: "var(--danger)", display: "flex", alignItems: "center", gap: 4 }}>
-              <IconAlertTriangle size={13} /> {blockedCount} bloquée{blockedCount > 1 ? "s" : ""} +48h
+              <IconAlertTriangle size={13} /> {blockedCount} bloquée{blockedCount > 1 ? "s" : ""} +{slaHours}h
             </span>
           )}
         </div>
@@ -336,7 +337,7 @@ export function KanbanBoard({ initialOrders, employees = [] }: {
                           }}
                         >
                           {colOrders.map((order, i) => (
-                            <OrderCard key={order.id} order={order} index={i} onClick={setSelectedOrder} />
+                            <OrderCard key={order.id} order={order} index={i} slaHours={slaHours} onClick={setSelectedOrder} />
                           ))}
                           {provided.placeholder}
                           {colOrders.length === 0 && !snapshot.isDraggingOver && (
@@ -356,7 +357,7 @@ export function KanbanBoard({ initialOrders, employees = [] }: {
       )}
 
       {/* Timeline */}
-      {view === "timeline" && <TimelineView orders={activeOrders} onCardClick={setSelectedOrder} />}
+      {view === "timeline" && <TimelineView orders={activeOrders} slaHours={slaHours} onCardClick={setSelectedOrder} />}
 
       {/* Slide panel */}
       {selectedOrder && (
